@@ -1,0 +1,28 @@
+{
+  "name": "auto-update",
+  "version": "1.0.0",
+  "description": "tianma-autoupdate",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tianmajs/tianma-autoupdate"
+  },
+  "keywords": [
+    "tianma",
+    "tianma-autoupdate"
+  ],
+  "author": "xshong2008",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tianmajs/tianma-autoupdate/issues"
+  },
+  "devDependencies": {
+    "npm": "*",
+    "co": "*",
+    "promise": "*"
+  },
+  "homepage": "https://github.com/tianmajs/tianma-autoupdate"
+}
