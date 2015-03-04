@@ -1,97 +1,58 @@
-var npm = require('npm'),
-    Promise = require('promise'),
-    co = require('co'),
+var fs = require('fs'),
+	path = require('path'),
+	http = require('http'),
+	exec = require('child_process').exec;
 
-    _Util = {
-        /**
-         * 检查模块是否有更新版本
-         * @param {Array}   package        需要检查的模块的名称，可以,分割的数组，可以为数组
-         * @param {Function} callback      回调方法，返回为一个对象，key为模块的名称（小写）,val为对象，包含属性,package,current,wanted,latesed
-         * @yield {[type]}   [description]
-         */
-        check: function(packageList, callback) {
-            if (typeof(packageList) == 'string') {
-                packageList = packageList.split(',');
-            }
+var LOG_PREFIX = '[autoupdate]: ';
 
-            co(function*() {
-                yield Promise.denodeify(npm.load)({});
+var pkg = (function find(dir) {
 
-                var list = [];
-                packageList.forEach(function(packageName) {
-                    var data = Promise.denodeify(npm.outdate)(packageName);
-                    list.push(data);
-                });
+	var pkg = path.join(dir, 'package.json'),
+			parent;
 
+	if (fs.existsSync(pkg)) {
+		return JSON.parse(fs.readFileSync(pkg, 'utf8')||{});
+	}
+	parent = path.join(dir, '../');
+	if (parent === dir) {
+		throw new Error('package.json not found');
+	}
+	return find(parent);
 
-                list =
-                    yield list;
+}(path.dirname(module.parent.filename)));
 
-                var map = {};
-                list.forEach(function(item) {
-                    item = getInfoData(item);
-                    map[item.package] = item;
-                });
+module.exports = function (callback) {
+	var registry = (pkg.publishConfig && pkg.publishConfig.registry) || 'http://registry.npmjs.org',
+			pkgUrl = registry + '/' + pkg.name;
 
-                callback && callback(null, map);
-            });
-        },
-        /**
-         * 更新
-         * @param  {[type]} package [description]
-         * @return {[type]}         [description]
-         */
-        update: function(packageList, callback) {
-            if (typeof(packageList) == 'string') {
-                packageList = packageList.split(',');
-            }
+	http.get(pkgUrl, function (res) {
+		var data = [] ;
 
-            co(function*() {
-                var map =
-                    yield Promise.denodeify(_Util.check)(packageList);
+		if (res.statusCode !== 200) {
+			return console.error(LOG_PREFIX + 'Failed to check the new version(%s)', pkg.name);
+		}
 
-                var list = [];
-                for (var packageName in map) {
-                    var item = map[packageName];
+		res.on('data', function (chunk) {
+			data.push(chunk);
+		});
+		res.on('end', function () {
+			var command,
+					latest = JSON.parse(Buffer.concat(data).toString())['dist-tags']['latest'] ;
 
-                    if (item.isOutdated) {
-                        list.push(Promise.denodeify(npm.commands.update)(packageName));
-                    }
-                }
-
-                list =
-                    yield list;
-
-                callback && callback(list);
-            });
-        }
-    };
+			if (latest == pkg.version) {
+				return callback();
+			}
+			command = 'npm install ' + pkg.name + '@' + latest + ' --registry=' + registry ;
+			console.log(LOG_PREFIX + 'New version found (%s@%s)', pkg.name, latest);
+			exec(command, function (err) {
+				if (err) {
+					throw err;
+				}
+				console.log(LOG_PREFIX + 'Updated to %s (%s)', latest, pkg.name);
+				callback();
+			});
+		});
 
 
-
-/**
- * 将数组数据转换成对象
- * @param  {[type]} arr [description]
- * @return {[type]}     [description]
- */
-function getInfoData(data) {
-    data = data[0];
-
-    var attrName = ['', 'package', 'current', 'wanted', 'latest', 'location'],
-        obj = {},
-        i = 0;
-
-    attrName.forEach(function(key) {
-        if (i) {
-            var val = data[i];
-            obj[key] = val;
-        }
-        i++;
-    });
-
-    obj.isOutdated = obj.current < obj.wanted;
-
-    return obj;
-}
-
-module.exports = _Util;
+	});
+};
