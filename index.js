@@ -29,7 +29,7 @@ module.exports = function (callback) {
 		var data = [] ;
 
 		if (res.statusCode !== 200) {
-			return console.error(LOG_PREFIX + 'Failed to check the new version(%s)', pkg.name);
+			return failHandler(new Error('response statusCode: '+ res.statusCode));
 		}
 
 		res.on('data', function (chunk) {
@@ -40,19 +40,29 @@ module.exports = function (callback) {
 					latest = JSON.parse(Buffer.concat(data).toString())['dist-tags']['latest'] ;
 
 			if (latest == pkg.version) {
+				console.log(LOG_PREFIX + 'You are currently on the latest version (%s)', pkg.name);
 				return callback();
 			}
 			command = 'npm install ' + pkg.name + '@' + latest + ' --registry=' + registry ;
 			console.log(LOG_PREFIX + 'New version found (%s@%s)', pkg.name, latest);
 			exec(command, function (err) {
 				if (err) {
-					throw err;
+					return failHandler(err);
 				}
 				console.log(LOG_PREFIX + 'Updated to %s (%s)', latest, pkg.name);
 				callback();
 			});
 		});
 
-
+		res.on('error',function (err){
+			failHandler(err);
+		});
 	});
+
+	function failHandler(err){
+		console.error(LOG_PREFIX  + 'Failed to update the new version (%s)', pkg.name);
+		console.error(err && err.message);
+		callback();
+	}
+
 };
