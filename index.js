@@ -36,12 +36,17 @@ module.exports = function (callback) {
             data.push(chunk);
         });
         res.on('end', function () {
-            var command,
-                latest = JSON.parse(Buffer.concat(data).toString())['dist-tags']['latest'] ;
+            var command,latest;
+
+            try{
+                lastest = JSON.parse(Buffer.concat(data).toString())['dist-tags']['latest'] ;
+            }catch(err){
+                return error(err);
+            }
 
             if (latest == pkg.version) {
                 console.log(LOG_PREFIX + 'You are currently on the latest version (%s)', pkg.name);
-                return callback();
+                return callback(null, lastest);
             }
             command = 'npm install ' + pkg.name + '@' + latest + ' --registry=' + registry ;
             console.log(LOG_PREFIX + 'New version found (%s@%s)', pkg.name, latest);
@@ -51,7 +56,7 @@ module.exports = function (callback) {
                     return error(err);
                 }
                 console.log(LOG_PREFIX + 'Updated to %s (%s)', latest, pkg.name);
-                callback();
+                callback(null, lastest);
             });
         });
 
@@ -63,7 +68,7 @@ module.exports = function (callback) {
     function error(err){
         console.error(LOG_PREFIX  + 'Failed to update the new version (%s)', pkg.name);
         console.error(err && err.message);
-        callback();
+        callback(err);
     }
 
 };
