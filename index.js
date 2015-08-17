@@ -45,6 +45,7 @@ module.exports = function (callback) {
             }
             command = 'npm install ' + pkg.name + '@' + latest + ' --registry=' + registry ;
             console.log(LOG_PREFIX + 'New version found (%s@%s)', pkg.name, latest);
+
             exec(command, function (err) {
                 if (err) {
                     return error(err);
