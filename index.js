@@ -29,7 +29,7 @@ module.exports = function (callback) {
         var data = [] ;
 
         if (res.statusCode !== 200) {
-            return failHandler(new Error('response statusCode: '+ res.statusCode));
+            return error(new Error('response statusCode: '+ res.statusCode));
         }
 
         res.on('data', function (chunk) {
@@ -47,7 +47,7 @@ module.exports = function (callback) {
             console.log(LOG_PREFIX + 'New version found (%s@%s)', pkg.name, latest);
             exec(command, function (err) {
                 if (err) {
-                    return failHandler(err);
+                    return error(err);
                 }
                 console.log(LOG_PREFIX + 'Updated to %s (%s)', latest, pkg.name);
                 callback();
@@ -55,11 +55,11 @@ module.exports = function (callback) {
         });
 
         res.on('error',function (err){
-            failHandler(err);
+            error(err);
         });
     });
 
-    function failHandler(err){
+    function error(err){
         console.error(LOG_PREFIX  + 'Failed to update the new version (%s)', pkg.name);
         console.error(err && err.message);
         callback();
