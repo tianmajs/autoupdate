@@ -1,26 +1,26 @@
 {
-  "name": "autoupdate",
-  "version": "1.0.1",
-  "description": "autoupdate node module",
-  "main": "./index.js",
-  "scripts": {
-    "test": "mocha"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/tianmajs/autoupdate"
-  },
-  "keywords": [
-    "autoupdate"
-  ],
-  "author": "nqdeng@gmail.com,houfeng0923@gmail.com",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/tianmajs/autoupdate/issues"
-  },
-  "devDependencies": {
-    "mocha": "*",
-    "should": "*"
-  },
-  "homepage": "https://github.com/tianmajs/autoupdate"
+    "name": "autoupdate",
+    "version": "1.0.1",
+    "description": "autoupdate node module",
+    "main": "./index.js",
+    "scripts": {
+        "test": "mocha"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/tianmajs/autoupdate"
+    },
+    "keywords": [
+        "autoupdate"
+    ],
+    "author": "nqdeng@gmail.com,houfeng0923@gmail.com",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/tianmajs/autoupdate/issues"
+    },
+    "devDependencies": {
+        "mocha": "*",
+        "should": "*"
+    },
+    "homepage": "https://github.com/tianmajs/autoupdate"
 }
